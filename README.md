@@ -26,11 +26,15 @@ npm run tauri:dev
 - `npm run tauri:dev`: full desktop app (frontend + Rust backend)
 - `npm run build`: frontend build
 - `npm run tauri:build`: desktop installer build
+- `npm run clean:build`: remove Rust/Tauri build artifacts
 - `npm run release:macos:unsigned`: macOS unsigned DMG release flow (tests + build + DMG check)
 - `npm run release:windows:unsigned`: Windows unsigned NSIS release flow (tests + build + `.exe` check)
 - `npm run package:windows:unsigned`: validate Windows unsigned NSIS artifact exists
 - `npm test`: frontend tests (Vitest)
 - `cd src-tauri && cargo test`: Rust backend tests
+
+By default, Rust/Tauri build artifacts are now written to `/tmp/dvu_u-target` to keep repository size small.
+You can override this path by exporting `DVU_TARGET_DIR` before running scripts.
 
 ## User Workflow
 

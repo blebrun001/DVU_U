@@ -10,8 +10,9 @@ fi
 PRODUCT_NAME="$(node -p "JSON.parse(require('fs').readFileSync('src-tauri/tauri.conf.json','utf8')).productName")"
 VERSION="$(node -p "JSON.parse(require('fs').readFileSync('src-tauri/tauri.conf.json','utf8')).version")"
 ARCH="$(uname -m)"
+TARGET_ROOT="${DVU_TARGET_DIR:-src-tauri/target}"
 
-APP_SRC="src-tauri/target/release/bundle/macos/${PRODUCT_NAME}.app"
+APP_SRC="${TARGET_ROOT}/release/bundle/macos/${PRODUCT_NAME}.app"
 if [[ ! -d "${APP_SRC}" ]]; then
   echo "ERROR: App bundle not found at ${APP_SRC}"
   echo "Run: npm run tauri:build -- --bundles app"
@@ -20,7 +21,7 @@ fi
 
 STAGE_DIR="$(mktemp -d /tmp/dvu-stage.XXXXXX)"
 APP_STAGE="${STAGE_DIR}/${PRODUCT_NAME}.app"
-DMG_DIR="src-tauri/target/release/bundle/dmg"
+DMG_DIR="${TARGET_ROOT}/release/bundle/dmg"
 DMG_PATH="${DMG_DIR}/${PRODUCT_NAME}_${VERSION}_${ARCH}.dmg"
 
 cleanup() {

@@ -2,6 +2,10 @@
 
 set -euo pipefail
 
+DVU_TARGET_DIR="${DVU_TARGET_DIR:-/tmp/dvu_u-target}"
+export DVU_TARGET_DIR
+export CARGO_TARGET_DIR="${DVU_TARGET_DIR}"
+
 if [[ "$(uname -s)" != "Darwin" ]]; then
   echo "This script must be run on macOS."
   exit 1
@@ -22,10 +26,10 @@ npm run tauri:build -- --bundles app
 echo "==> Packaging unsigned macOS DMG"
 npm run package:macos:unsigned
 
-DMG_PATH="$(find src-tauri/target/release/bundle/dmg -maxdepth 1 -type f -name '*.dmg' | sort | tail -n 1 || true)"
+DMG_PATH="$(find "${DVU_TARGET_DIR}/release/bundle/dmg" -maxdepth 1 -type f -name '*.dmg' | sort | tail -n 1 || true)"
 
 if [[ -z "${DMG_PATH}" ]]; then
-  echo "ERROR: No DMG artifact found in src-tauri/target/release/bundle/dmg"
+  echo "ERROR: No DMG artifact found in ${DVU_TARGET_DIR}/release/bundle/dmg"
   exit 1
 fi
 
