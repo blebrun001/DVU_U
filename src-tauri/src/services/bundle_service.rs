@@ -5,9 +5,9 @@ use std::path::{Path, PathBuf};
 
 use chrono::Utc;
 use walkdir::WalkDir;
+use zip::write::FileOptions;
 use zip::CompressionMethod;
 use zip::ZipWriter;
-use zip::write::FileOptions;
 
 use crate::domain::errors::{bad_request, AppError, AppResult};
 use crate::domain::models::{SourceEntry, SourceKind};
@@ -333,21 +333,15 @@ mod tests {
         let out = svc
             .build_bundle(&[
                 source(
-                    folder_a
-                        .to_str()
-                        .expect("utf8 folder_a"),
+                    folder_a.to_str().expect("utf8 folder_a"),
                     SourceKind::Folder,
                 ),
                 source(
-                    folder_b
-                        .to_str()
-                        .expect("utf8 folder_b"),
+                    folder_b.to_str().expect("utf8 folder_b"),
                     SourceKind::Folder,
                 ),
                 source(
-                    loose_file
-                        .to_str()
-                        .expect("utf8 loose_file"),
+                    loose_file.to_str().expect("utf8 loose_file"),
                     SourceKind::File,
                 ),
             ])

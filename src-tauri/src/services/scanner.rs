@@ -131,10 +131,7 @@ impl ScannerService {
         seen_local_paths.insert(canonical_str.clone());
 
         let metadata = std::fs::metadata(&canonical)?;
-        let modified_at = metadata
-            .modified()
-            .ok()
-            .map(system_time_to_utc);
+        let modified_at = metadata.modified().ok().map(system_time_to_utc);
 
         let file_name = Path::new(&relative_path)
             .file_name()

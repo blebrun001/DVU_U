@@ -4,8 +4,8 @@ mod commands;
 pub mod domain;
 pub mod services;
 
-use tauri::{Manager, RunEvent};
 use services::app_services::AppServices;
+use tauri::{Manager, RunEvent};
 
 pub type SharedAppServices = Arc<AppServices>;
 

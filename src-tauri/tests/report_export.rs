@@ -35,7 +35,9 @@ fn exports_json_and_csv_reports() {
     let json_path = service
         .export(&report, ExportFormat::Json)
         .expect("json export");
-    let csv_path = service.export(&report, ExportFormat::Csv).expect("csv export");
+    let csv_path = service
+        .export(&report, ExportFormat::Csv)
+        .expect("csv export");
 
     assert!(json_path.exists());
     assert!(csv_path.exists());

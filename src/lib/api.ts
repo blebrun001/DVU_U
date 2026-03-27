@@ -33,74 +33,10 @@ export async function testDestination(
 export async function listRecentDatasets(
   input: RecentDatasetsInput
 ): Promise<RecentDatasetOption[]> {
-  const normalized = input.serverUrl.trim().replace(/\/+$/, '');
-  if (!normalized) {
+  if (!input.serverUrl.trim()) {
     return [];
   }
-
-  const parsed = new URL(normalized);
-  const pathParts = parsed.pathname.split('/').filter(Boolean);
-  const subtree = pathParts[0]?.toLowerCase() === 'dataverse' && pathParts[1] ? pathParts[1] : '';
-
-  const candidates = [normalized];
-  const origin = parsed.origin.replace(/\/+$/, '');
-  if (!candidates.includes(origin)) {
-    candidates.push(origin);
-  }
-
-  let lastError: Error | null = null;
-  for (const baseUrl of candidates) {
-    try {
-      const url = new URL(`${baseUrl}/api/search`);
-      url.searchParams.set('q', '*');
-      url.searchParams.set('type', 'dataset');
-      url.searchParams.set('sort', 'date');
-      url.searchParams.set('order', 'desc');
-      url.searchParams.set('per_page', '10');
-      if (subtree) {
-        url.searchParams.set('subtree', subtree);
-      }
-
-      const headers: Record<string, string> = {
-        Accept: 'application/json'
-      };
-      const token = input.apiToken.trim();
-      if (token) {
-        headers['X-Dataverse-Key'] = token;
-      }
-
-      const response = await fetch(url.toString(), { method: 'GET', headers });
-      if (!response.ok) {
-        if (response.status === 404) {
-          continue;
-        }
-        throw new Error(`Dataverse recent dataset lookup failed (HTTP ${response.status})`);
-      }
-
-      const payload = (await response.json()) as {
-        data?: { items?: Array<Record<string, unknown>> };
-      };
-      const items = payload.data?.items ?? [];
-
-      return items
-        .map((entry) => {
-          const persistentId = String(entry.global_id ?? entry.globalId ?? '').trim();
-          if (!persistentId) {
-            return null;
-          }
-          const title = String(entry.name ?? entry.title ?? persistentId).trim();
-          return {
-            persistentId,
-            title
-          };
-        })
-        .filter((value): value is RecentDatasetOption => value !== null);
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
-    }
-  }
-
-  throw lastError ?? new Error('Dataverse recent dataset lookup failed.');
+  return invoke<RecentDatasetOption[]>('list_recent_datasets', { input });
 }
 
 export async function addSources(paths: string[], recursive: boolean): Promise<SourceEntry[]> {

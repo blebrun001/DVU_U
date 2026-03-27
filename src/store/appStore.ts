@@ -54,9 +54,20 @@ interface AppStore {
 }
 
 let detachListeners: UnlistenFn[] = [];
+let listenerSetupPromise: Promise<void> | null = null;
 
 export function canKeepStructureForSources(sources: SourceEntry[]): boolean {
   return sources.length > 1 || sources.some((source) => source.kind === 'folder');
+}
+
+export function shouldPollSnapshot(sessionState: SessionState): boolean {
+  return (
+    sessionState === 'uploading' ||
+    sessionState === 'paused' ||
+    sessionState === 'cancelling' ||
+    sessionState === 'scanning' ||
+    sessionState === 'analyzing'
+  );
 }
 
 function fromBootstrap(bootstrap: BootstrapState) {
@@ -71,6 +82,55 @@ function fromBootstrap(bootstrap: BootstrapState) {
     snapshot: bootstrap.lastSnapshot ?? null,
     finalReport: bootstrap.finalReport ?? null
   };
+}
+
+async function setupStoreListeners(
+  set: (partial: Partial<AppStore> | ((state: AppStore) => Partial<AppStore>)) => void,
+  get: () => AppStore
+) {
+  if (get().listenerReady) {
+    return;
+  }
+  if (listenerSetupPromise) {
+    await listenerSetupPromise;
+    return;
+  }
+
+  listenerSetupPromise = (async () => {
+    const snapshotListener = await listen<TransferSnapshot>('transfer:snapshot', (event) => {
+      const snapshot = event.payload;
+      set({
+        snapshot,
+        sessionState: snapshot.state
+      });
+      if (
+        snapshot.state === 'completed' ||
+        snapshot.state === 'completed_with_errors' ||
+        snapshot.state === 'failed'
+      ) {
+        void get().refreshSnapshot();
+      }
+    });
+    const analysisListener = await listen<AnalysisProgressEvent>('analysis:progress', (event) => {
+      const progress = event.payload;
+      set((state) => {
+        const nextLogs = [...state.analysisLogs, progress.message];
+        return {
+          analysisProgress: progress,
+          analysisLogs: nextLogs.slice(-8)
+        };
+      });
+    });
+
+    detachListeners = [snapshotListener, analysisListener];
+    set({ listenerReady: true });
+  })();
+
+  try {
+    await listenerSetupPromise;
+  } finally {
+    listenerSetupPromise = null;
+  }
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -95,34 +155,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     try {
       const [bootstrap, history] = await Promise.all([loadBootstrapState(), listHistory()]);
       set({ ...fromBootstrap(bootstrap), history, initialized: true });
-      if (!get().listenerReady) {
-        const snapshotListener = await listen<TransferSnapshot>('transfer:snapshot', (event) => {
-          const snapshot = event.payload;
-          set({
-            snapshot,
-            sessionState: snapshot.state
-          });
-          if (
-            snapshot.state === 'completed' ||
-            snapshot.state === 'completed_with_errors' ||
-            snapshot.state === 'failed'
-          ) {
-            void get().refreshSnapshot();
-          }
-        });
-        const analysisListener = await listen<AnalysisProgressEvent>('analysis:progress', (event) => {
-          const progress = event.payload;
-          set((state) => {
-            const nextLogs = [...state.analysisLogs, progress.message];
-            return {
-              analysisProgress: progress,
-              analysisLogs: nextLogs.slice(-8)
-            };
-          });
-        });
-        detachListeners = [snapshotListener, analysisListener];
-        set({ listenerReady: true });
-      }
+      await setupStoreListeners(set, get);
     } catch (err) {
       set({ errorMessage: `Failed to initialize app: ${String(err)}` });
     } finally {
@@ -309,8 +342,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
 }));
 
 export function teardownStoreListener() {
+  if (detachListeners.length === 0) {
+    useAppStore.setState({ listenerReady: false });
+    return;
+  }
   for (const detach of detachListeners) {
     void detach();
   }
   detachListeners = [];
+  useAppStore.setState({ listenerReady: false });
 }

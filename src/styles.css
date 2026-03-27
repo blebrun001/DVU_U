@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
-
 :root {
   --bg-0: #f4f5f1;
   --bg-1: #ffffff;
@@ -20,7 +18,7 @@
 
 body {
   margin: 0;
-  font-family: 'Manrope', 'Avenir Next', 'Segoe UI', sans-serif;
+  font-family: 'Avenir Next', 'Segoe UI', 'SF Pro Text', 'Helvetica Neue', sans-serif;
   color: var(--ink);
   background:
     radial-gradient(850px 450px at 10% -10%, #dfe9d7 0%, transparent 70%),

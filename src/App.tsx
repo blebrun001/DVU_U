@@ -4,7 +4,7 @@ import { DestinationForm } from './features/DestinationForm';
 import { HistoryPanel } from './features/HistoryPanel';
 import { SourceManager } from './features/SourceManager';
 import { TransferPanel } from './features/TransferPanel';
-import { teardownStoreListener, useAppStore } from './store/appStore';
+import { shouldPollSnapshot, teardownStoreListener, useAppStore } from './store/appStore';
 
 export function App() {
   const store = useAppStore();
@@ -20,14 +20,22 @@ export function App() {
 
   useEffect(() => {
     void store.bootstrap();
+    return () => {
+      teardownStoreListener();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!shouldPollSnapshot(store.sessionState)) {
+      return;
+    }
     const interval = setInterval(() => {
       void store.refreshSnapshot();
     }, 1500);
     return () => {
       clearInterval(interval);
-      teardownStoreListener();
     };
-  }, []);
+  }, [store.sessionState, store.refreshSnapshot]);
 
   return (
     <main className="app-shell">

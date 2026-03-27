@@ -25,9 +25,7 @@ pub fn is_retryable(err: &AppError) -> bool {
                 return true;
             }
             if let Some(status) = err.status() {
-                return status.as_u16() == 408
-                    || status.as_u16() == 429
-                    || status.as_u16() >= 500;
+                return status.as_u16() == 408 || status.as_u16() == 429 || status.as_u16() >= 500;
             }
             false
         }

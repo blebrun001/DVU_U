@@ -2,6 +2,7 @@ pub mod analyzer;
 pub mod app_services;
 pub mod bundle_service;
 pub mod dataverse_client;
+pub mod dataverse_url;
 pub mod reporting;
 pub mod retry;
 pub mod scanner;

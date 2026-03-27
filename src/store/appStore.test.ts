@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { listen } from '@tauri-apps/api/event';
 import type {
   AnalysisProgressEvent,
   BootstrapState,
@@ -28,9 +29,15 @@ vi.mock('../lib/api', () => ({
 }));
 
 import * as api from '../lib/api';
-import { canKeepStructureForSources, useAppStore } from './appStore';
+import {
+  canKeepStructureForSources,
+  shouldPollSnapshot,
+  teardownStoreListener,
+  useAppStore
+} from './appStore';
 
 const mockedApi = vi.mocked(api);
+const mockedListen = vi.mocked(listen);
 
 const defaultBootstrap: BootstrapState = {
   sessionId: 'session-1',
@@ -120,6 +127,7 @@ function resetStoreState() {
 }
 
 beforeEach(() => {
+  teardownStoreListener();
   vi.clearAllMocks();
   resetStoreState();
   mockedApi.loadBootstrapState.mockResolvedValue(defaultBootstrap);
@@ -142,6 +150,23 @@ describe('canKeepStructureForSources', () => {
   it('returns true for multiple sources or a folder', () => {
     expect(canKeepStructureForSources([sourceFile, { ...sourceFile, id: 'src-2' }])).toBe(true);
     expect(canKeepStructureForSources([folderSource])).toBe(true);
+  });
+});
+
+describe('shouldPollSnapshot', () => {
+  it('returns true only for active transfer lifecycle states', () => {
+    expect(shouldPollSnapshot('uploading')).toBe(true);
+    expect(shouldPollSnapshot('paused')).toBe(true);
+    expect(shouldPollSnapshot('cancelling')).toBe(true);
+    expect(shouldPollSnapshot('scanning')).toBe(true);
+    expect(shouldPollSnapshot('analyzing')).toBe(true);
+
+    expect(shouldPollSnapshot('draft')).toBe(false);
+    expect(shouldPollSnapshot('ready')).toBe(false);
+    expect(shouldPollSnapshot('completed')).toBe(false);
+    expect(shouldPollSnapshot('completed_with_errors')).toBe(false);
+    expect(shouldPollSnapshot('failed')).toBe(false);
+    expect(shouldPollSnapshot('interrupted')).toBe(false);
   });
 });
 
@@ -187,6 +212,21 @@ describe('useAppStore setSources', () => {
     useAppStore.getState().setSources([sourceFile]);
 
     expect(useAppStore.getState().keepStructure).toBe(false);
+  });
+});
+
+describe('store listeners lifecycle', () => {
+  it('bootstraps listeners once and teardown is idempotent', async () => {
+    await useAppStore.getState().bootstrap();
+    await useAppStore.getState().bootstrap();
+
+    expect(mockedListen).toHaveBeenCalledTimes(2);
+    expect(useAppStore.getState().listenerReady).toBe(true);
+
+    teardownStoreListener();
+    teardownStoreListener();
+
+    expect(useAppStore.getState().listenerReady).toBe(false);
   });
 });
 

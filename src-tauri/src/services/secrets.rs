@@ -21,24 +21,18 @@ impl SecretsService {
         format!("{}::{}", normalize(server_url), dataset_pid.trim())
     }
 
-    pub fn set_api_token(
-        &self,
-        server_url: &str,
-        dataset_pid: &str,
-        token: &str,
-    ) -> AppResult<()> {
+    pub fn set_api_token(&self, server_url: &str, dataset_pid: &str, token: &str) -> AppResult<()> {
         let account_key = self.account_key(server_url, dataset_pid);
         if let Ok(mut cache) = self.session_cache.lock() {
             cache.insert(account_key.clone(), token.to_string());
         }
 
-        let entry = Entry::new(
-            &self.service_name,
-            &account_key,
-        )?;
+        let entry = Entry::new(&self.service_name, &account_key)?;
         // Keep app usable even if keychain write is unavailable on this machine/session.
         if let Err(err) = entry.set_password(token) {
-            tracing::warn!("cannot persist API token in keychain, using session fallback only: {err}");
+            tracing::warn!(
+                "cannot persist API token in keychain, using session fallback only: {err}"
+            );
         }
         Ok(())
     }
@@ -46,10 +40,7 @@ impl SecretsService {
     pub fn get_api_token(&self, server_url: &str, dataset_pid: &str) -> AppResult<Option<String>> {
         let account_key = self.account_key(server_url, dataset_pid);
 
-        let entry = Entry::new(
-            &self.service_name,
-            &account_key,
-        )?;
+        let entry = Entry::new(&self.service_name, &account_key)?;
         match entry.get_password() {
             Ok(token) => Ok(Some(token)),
             Err(keyring::Error::NoEntry) => {

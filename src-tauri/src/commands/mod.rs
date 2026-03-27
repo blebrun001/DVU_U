@@ -1,14 +1,15 @@
-use tauri::{Emitter, State};
 use std::time::{Duration, Instant};
+use tauri::{Emitter, State};
 
 use crate::domain::errors::{bad_request, AppError, AppResult};
 use crate::domain::models::{
     AnalysisDecisionKind, AnalysisItemDecision, AnalysisProgressEvent, AnalysisSummary,
-    AnalyzeBatchInput,
-    DestinationConfigInput, DestinationConfigStored, DestinationErrorKind, DestinationValidationResult,
-    FinalReport, HistoryEntry, ItemState, OperationResult, RecentDatasetOption, RecentDatasetsInput,
-    ScanSummary, ScannedItem, SessionState, SourceEntry, SourceKind, TransferPlan, TransferSnapshot,
+    AnalyzeBatchInput, DestinationConfigInput, DestinationConfigStored, DestinationErrorKind,
+    DestinationValidationResult, FinalReport, HistoryEntry, ItemState, OperationResult,
+    RecentDatasetOption, RecentDatasetsInput, ScanSummary, ScannedItem, SessionState, SourceEntry,
+    SourceKind, TransferPlan, TransferSnapshot,
 };
+use crate::services::dataverse_url::normalize_server_url;
 use crate::services::reporting::ExportFormat;
 use crate::{AppState, SharedAppServices};
 
@@ -123,9 +124,10 @@ pub async fn test_destination(
             return Err(err.to_string());
         }
 
-        if let Err(err) = services
-            .secrets
-            .set_api_token(&stored.server_url, &stored.dataset_pid, &token)
+        if let Err(err) =
+            services
+                .secrets
+                .set_api_token(&stored.server_url, &stored.dataset_pid, &token)
         {
             return Err(err.to_string());
         }
@@ -184,7 +186,10 @@ pub async fn scan_sources(state: State<'_, AppState>) -> Result<ScanSummary, Str
         .map_err(|err| err.to_string())?;
 
     let result: Result<ScanSummary, String> = (|| {
-        let sources = services.store.list_sources().map_err(|err| err.to_string())?;
+        let sources = services
+            .store
+            .list_sources()
+            .map_err(|err| err.to_string())?;
         let outcome = services
             .scanner
             .scan_sources(&sources)
@@ -217,9 +222,7 @@ pub async fn analyze_batch(
     let services = state.0.clone();
     ensure_transfer_not_active(&services).map_err(|err| err.to_string())?;
     services.clear_preflight_cancel();
-    let keep_structure = input
-        .and_then(|it| it.keep_structure)
-        .unwrap_or(false);
+    let keep_structure = input.and_then(|it| it.keep_structure).unwrap_or(false);
 
     services
         .store
@@ -252,24 +255,24 @@ pub async fn analyze_batch(
             .await;
 
         if !validation.ok {
-            return Err(
-                validation
-                    .message
-                    .unwrap_or_else(|| "Destination validation failed.".to_string()),
-            );
+            return Err(validation
+                .message
+                .unwrap_or_else(|| "Destination validation failed.".to_string()));
         }
 
         ensure_preflight_not_cancelled(&services).map_err(|err| err.to_string())?;
         emit_analysis_progress(&services, 2, 6, "Loading selected sources");
 
-        destination.direct_upload_supported =
-            validation.direct_upload_supported.unwrap_or(false);
+        destination.direct_upload_supported = validation.direct_upload_supported.unwrap_or(false);
         services
             .store
             .save_destination(&destination)
             .map_err(|err| err.to_string())?;
 
-        let sources = services.store.list_sources().map_err(|err| err.to_string())?;
+        let sources = services
+            .store
+            .list_sources()
+            .map_err(|err| err.to_string())?;
         let can_keep_structure = sources.len() > 1
             || sources
                 .iter()
@@ -484,14 +487,21 @@ pub async fn cancel_transfer(state: State<'_, AppState>) -> Result<OperationResu
         .get_session_state()
         .map_err(|err| err.to_string())?;
 
-    if matches!(session_state, SessionState::Scanning | SessionState::Analyzing) {
+    if matches!(
+        session_state,
+        SessionState::Scanning | SessionState::Analyzing
+    ) {
         services.request_preflight_cancel();
         let _ = services.store.force_set_session_state(&SessionState::Draft);
         emit_analysis_progress(&services, 6, 6, "Cancellation requested");
         return Ok(OperationResult::ok("Cancellation requested"));
     }
 
-    services.transfer.cancel().await.map_err(|err| err.to_string())
+    services
+        .transfer
+        .cancel()
+        .await
+        .map_err(|err| err.to_string())
 }
 
 #[tauri::command]
@@ -509,9 +519,7 @@ pub async fn get_analysis_summary(
 }
 
 #[tauri::command]
-pub async fn get_final_report(
-    state: State<'_, AppState>,
-) -> Result<Option<FinalReport>, String> {
+pub async fn get_final_report(state: State<'_, AppState>) -> Result<Option<FinalReport>, String> {
     with_services(state, |services| services.store.get_final_report())
 }
 
@@ -556,32 +564,6 @@ fn parse_export_format(value: &str) -> AppResult<ExportFormat> {
         "csv" => Ok(ExportFormat::Csv),
         other => Err(bad_request(format!("unsupported report format: {other}"))),
     }
-}
-
-fn normalize_server_url(value: &str) -> AppResult<String> {
-    let trimmed = value.trim().trim_end_matches('/');
-    let parsed = url::Url::parse(trimmed).map_err(|err| bad_request(err.to_string()))?;
-    if parsed.scheme() != "http" && parsed.scheme() != "https" {
-        return Err(bad_request("server URL must use http or https"));
-    }
-    let mut segments = parsed
-        .path_segments()
-        .map(|it| it.collect::<Vec<_>>())
-        .unwrap_or_default();
-    if segments.len() >= 2 && segments[0].eq_ignore_ascii_case("dataverse") {
-        segments.clear();
-        let host = parsed
-            .host_str()
-            .ok_or_else(|| bad_request("server URL must include a host"))?;
-        let origin = if let Some(port) = parsed.port() {
-            format!("{}://{}:{}", parsed.scheme(), host, port)
-        } else {
-            format!("{}://{}", parsed.scheme(), host)
-        };
-        return Ok(origin);
-    }
-
-    Ok(trimmed.to_string())
 }
 
 fn resolve_api_token(
@@ -631,7 +613,10 @@ fn ensure_transfer_not_active(services: &SharedAppServices) -> AppResult<()> {
     Ok(())
 }
 
-fn with_services<T>(state: State<'_, AppState>, f: impl FnOnce(&SharedAppServices) -> AppResult<T>) -> Result<T, String> {
+fn with_services<T>(
+    state: State<'_, AppState>,
+    f: impl FnOnce(&SharedAppServices) -> AppResult<T>,
+) -> Result<T, String> {
     let services = state.0.clone();
     f(&services).map_err(|err| err.to_string())
 }

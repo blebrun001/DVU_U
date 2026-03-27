@@ -22,7 +22,7 @@ Backend layout:
 - `domain`: shared models, errors, and state machine.
 
 Frontend layout:
-- `features`: domain UI modules (`DestinationForm`, `SourceManager`, `AnalysisPanel`, `TransferPanel`, `HistoryPanel`).
+- `features`: domain UI modules (`DestinationForm`, `SourceManager`, `TransferPanel`, `HistoryPanel`).
 - `store`: global orchestration (Zustand) and backend synchronization.
 - `lib/api.ts`: IPC contract (Tauri command invocations).
 

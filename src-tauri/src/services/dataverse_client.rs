@@ -1,7 +1,10 @@
 use std::cmp::min;
 use std::collections::HashMap;
 use std::path::Path;
-use std::sync::{Arc, atomic::{AtomicU64, Ordering}};
+use std::sync::{
+    atomic::{AtomicU64, Ordering},
+    Arc,
+};
 use std::time::Duration;
 
 use futures_util::TryStreamExt;
@@ -21,6 +24,9 @@ use crate::domain::errors::{bad_request, AppError, AppResult};
 use crate::domain::models::{
     DestinationConfigInput, DestinationConfigStored, DestinationErrorKind,
     DestinationValidationResult, ScannedItem,
+};
+use crate::services::dataverse_url::{
+    extract_dataverse_alias, normalize_server_url, resolve_url, server_url_api_candidates,
 };
 
 pub type ProgressFn = Arc<dyn Fn(u64) + Send + Sync>;
@@ -46,16 +52,15 @@ pub struct DataverseClient {
 }
 
 impl DataverseClient {
-    pub fn new() -> Self {
+    pub fn new() -> AppResult<Self> {
         let http = reqwest::Client::builder()
             .no_gzip()
             .no_brotli()
             .no_deflate()
             .no_zstd()
             .timeout(Duration::from_secs(60 * 60 * 8))
-            .build()
-            .expect("reqwest client must build");
-        Self { http }
+            .build()?;
+        Ok(Self { http })
     }
 
     pub async fn validate_destination(
@@ -73,7 +78,7 @@ impl DataverseClient {
                     upload_supported: None,
                     direct_upload_supported: None,
                     error_kind: Some(DestinationErrorKind::InvalidInput),
-                    message: Some(message),
+                    message: Some(message.to_string()),
                 }
             }
         };
@@ -106,7 +111,8 @@ impl DataverseClient {
             }
         };
 
-        if response.status() == StatusCode::UNAUTHORIZED || response.status() == StatusCode::FORBIDDEN
+        if response.status() == StatusCode::UNAUTHORIZED
+            || response.status() == StatusCode::FORBIDDEN
         {
             return DestinationValidationResult {
                 ok: false,
@@ -116,7 +122,9 @@ impl DataverseClient {
                 upload_supported: Some(false),
                 direct_upload_supported: Some(false),
                 error_kind: Some(DestinationErrorKind::Auth),
-                message: Some("Authentication failed. Verify API token and permissions.".to_string()),
+                message: Some(
+                    "Authentication failed. Verify API token and permissions.".to_string(),
+                ),
             };
         }
 
@@ -223,7 +231,7 @@ impl DataverseClient {
         token: &str,
         limit: usize,
     ) -> AppResult<Vec<crate::domain::models::RecentDatasetOption>> {
-        let normalized = normalize_server_url(server_url).map_err(bad_request)?;
+        let normalized = normalize_server_url(server_url)?;
         let capped_limit = min(limit.max(1), 50);
         let candidates = server_url_api_candidates(&normalized);
         let subtree = extract_dataverse_alias(&normalized);
@@ -254,9 +262,8 @@ impl DataverseClient {
 
             if !response.status().is_success() {
                 let status = response.status();
-                let body = response.text().await.unwrap_or_default();
                 return Err(AppError::Network(format!(
-                    "Dataverse recent dataset lookup failed (HTTP {status}): {body}"
+                    "Dataverse recent dataset lookup failed (HTTP {status})"
                 )));
             }
 
@@ -426,7 +433,10 @@ impl DataverseClient {
             {
                 Ok(()) => return Ok(UploadModeUsed::Direct),
                 Err(DirectUploadError::Unsupported(message)) => {
-                    warn!("Direct upload unavailable for {}: {}", item.file_name, message);
+                    warn!(
+                        "Direct upload unavailable for {}: {}",
+                        item.file_name, message
+                    );
                 }
                 Err(DirectUploadError::Failed(error)) => {
                     return Err(error);
@@ -455,7 +465,8 @@ impl DataverseClient {
         let callback = progress;
 
         let stream = ReaderStream::new(file).map_ok(move |chunk| {
-            let next = sent_clone.fetch_add(chunk.len() as u64, Ordering::SeqCst) + chunk.len() as u64;
+            let next =
+                sent_clone.fetch_add(chunk.len() as u64, Ordering::SeqCst) + chunk.len() as u64;
             callback(next);
             chunk
         });
@@ -525,7 +536,9 @@ impl DataverseClient {
             .map_err(AppError::from)
             .map_err(DirectUploadError::Failed)?;
 
-        if response.status() == StatusCode::NOT_FOUND || response.status() == StatusCode::BAD_REQUEST {
+        if response.status() == StatusCode::NOT_FOUND
+            || response.status() == StatusCode::BAD_REQUEST
+        {
             let body = response.text().await.unwrap_or_default();
             return Err(DirectUploadError::Unsupported(body));
         }
@@ -552,9 +565,14 @@ impl DataverseClient {
             .map_err(DirectUploadError::Failed)?;
 
         if let Some(single_url) = envelope.data.url.clone() {
-            self.put_file_to_url(single_url, Path::new(&item.local_path), item.size_bytes, progress.clone())
-                .await
-                .map_err(DirectUploadError::Failed)?;
+            self.put_file_to_url(
+                single_url,
+                Path::new(&item.local_path),
+                item.size_bytes,
+                progress.clone(),
+            )
+            .await
+            .map_err(DirectUploadError::Failed)?;
         } else if let Some(urls) = envelope.data.urls.clone() {
             self.upload_multipart(
                 destination,
@@ -605,7 +623,8 @@ impl DataverseClient {
         let callback = progress;
 
         let stream = ReaderStream::new(file).map_ok(move |chunk| {
-            let uploaded = sent_clone.fetch_add(chunk.len() as u64, Ordering::SeqCst) + chunk.len() as u64;
+            let uploaded =
+                sent_clone.fetch_add(chunk.len() as u64, Ordering::SeqCst) + chunk.len() as u64;
             callback(uploaded);
             chunk
         });
@@ -666,7 +685,14 @@ impl DataverseClient {
             }
 
             let e_tag = self
-                .upload_part(part_url, path, part_offset, length, uploaded_so_far, progress.clone())
+                .upload_part(
+                    part_url,
+                    path,
+                    part_offset,
+                    length,
+                    uploaded_so_far,
+                    progress.clone(),
+                )
                 .await?;
             uploaded_so_far = uploaded_so_far.saturating_add(length);
             etags.insert(index.to_string(), e_tag);
@@ -722,8 +748,8 @@ impl DataverseClient {
         let callback = progress;
 
         let stream = ReaderStream::new(limited).map_ok(move |chunk| {
-            let part_uploaded = sent_clone.fetch_add(chunk.len() as u64, Ordering::SeqCst)
-                + chunk.len() as u64;
+            let part_uploaded =
+                sent_clone.fetch_add(chunk.len() as u64, Ordering::SeqCst) + chunk.len() as u64;
             callback(uploaded_before.saturating_add(part_uploaded));
             chunk
         });
@@ -830,72 +856,6 @@ struct UploadUrlsData {
     storage_identifier: String,
 }
 
-fn normalize_server_url(server_url: &str) -> Result<String, String> {
-    let trimmed = server_url.trim().trim_end_matches('/');
-    let parsed = url::Url::parse(trimmed).map_err(|err| format!("Invalid server URL: {err}"))?;
-    if parsed.scheme() != "https" && parsed.scheme() != "http" {
-        return Err("Server URL must use http or https".to_string());
-    }
-    let mut segments = parsed
-        .path_segments()
-        .map(|it| it.collect::<Vec<_>>())
-        .unwrap_or_default();
-    if segments.len() >= 2 && segments[0].eq_ignore_ascii_case("dataverse") {
-        segments.clear();
-        let host = parsed
-            .host_str()
-            .ok_or_else(|| "Server URL must include a host".to_string())?;
-        let origin = if let Some(port) = parsed.port() {
-            format!("{}://{}:{}", parsed.scheme(), host, port)
-        } else {
-            format!("{}://{}", parsed.scheme(), host)
-        };
-        return Ok(origin);
-    }
-    Ok(trimmed.to_string())
-}
-
-fn server_url_api_candidates(server_url: &str) -> Vec<String> {
-    let mut candidates = vec![server_url.trim_end_matches('/').to_string()];
-    let parsed = match url::Url::parse(server_url) {
-        Ok(value) => value,
-        Err(_) => return candidates,
-    };
-
-    if parsed.path() == "/" {
-        return candidates;
-    }
-
-    let host = match parsed.host_str() {
-        Some(value) => value,
-        None => return candidates,
-    };
-    let origin = if let Some(port) = parsed.port() {
-        format!("{}://{}:{}", parsed.scheme(), host, port)
-    } else {
-        format!("{}://{}", parsed.scheme(), host)
-    };
-    if !candidates.iter().any(|it| it == &origin) {
-        candidates.push(origin);
-    }
-
-    candidates
-}
-
-fn extract_dataverse_alias(server_url: &str) -> Option<String> {
-    let parsed = url::Url::parse(server_url).ok()?;
-    let mut segments = parsed.path_segments()?;
-    let first = segments.next()?;
-    let second = segments.next()?;
-    if first.eq_ignore_ascii_case("dataverse") {
-        let alias = second.trim();
-        if !alias.is_empty() {
-            return Some(alias.to_string());
-        }
-    }
-    None
-}
-
 fn encode_query_value(value: &str) -> String {
     byte_serialize(value.as_bytes()).collect::<String>()
 }
@@ -924,14 +884,6 @@ fn extract_dataset_title(payload: &Value) -> Option<String> {
                 }
             })
         })
-}
-
-fn resolve_url(server_url: &str, candidate: &str) -> String {
-    if candidate.starts_with("http://") || candidate.starts_with("https://") {
-        candidate.to_string()
-    } else {
-        format!("{}{}", server_url.trim_end_matches('/'), candidate)
-    }
 }
 
 fn directory_label(relative_path: &str) -> Option<String> {

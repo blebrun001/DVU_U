@@ -10,9 +10,10 @@ use uuid::Uuid;
 
 use crate::domain::errors::{bad_request, internal, AppError, AppResult};
 use crate::domain::models::{
-    AnalysisDecisionKind, AnalysisItemDecision, AnalysisSummary, BootstrapState, DestinationBootstrap,
-    DestinationConfigStored, FinalReport, HistoryEntry, ItemState, ScanSummary, ScannedItem,
-    SessionState, SourceEntry, SourceKind, TransferPlan, TransferSnapshot,
+    AnalysisDecisionKind, AnalysisItemDecision, AnalysisSummary, BootstrapState,
+    DestinationBootstrap, DestinationConfigStored, FinalReport, HistoryEntry, ItemState,
+    ScanSummary, ScannedItem, SessionState, SourceEntry, SourceKind, TransferPlan,
+    TransferSnapshot,
 };
 use crate::domain::state_machine::{ensure_item_transition, ensure_session_transition};
 
@@ -120,7 +121,8 @@ impl SessionStore {
             if let Some(mut snapshot) = self.get_last_snapshot()? {
                 snapshot.state = SessionState::Interrupted;
                 snapshot.last_message = Some(
-                    "Application closed during transfer. Review status and resume when ready.".to_string(),
+                    "Application closed during transfer. Review status and resume when ready."
+                        .to_string(),
                 );
                 snapshot.updated_at = Utc::now();
                 self.set_last_snapshot(&snapshot)?;
@@ -481,7 +483,10 @@ impl SessionStore {
                 matches!(item.decision, Some(AnalysisDecisionKind::Ready))
                     && matches!(
                         item.state,
-                        ItemState::Ready | ItemState::Error | ItemState::Retrying | ItemState::Uploading
+                        ItemState::Ready
+                            | ItemState::Error
+                            | ItemState::Retrying
+                            | ItemState::Uploading
                     )
             })
             .collect())
@@ -537,7 +542,12 @@ impl SessionStore {
         let conn = self.connection()?;
         conn.execute(
             "UPDATE batch_items SET state = ?2, message = ?3, last_updated = ?4 WHERE item_id = ?1",
-            params![item_id, enum_to_db(&state)?, message, Utc::now().to_rfc3339()],
+            params![
+                item_id,
+                enum_to_db(&state)?,
+                message,
+                Utc::now().to_rfc3339()
+            ],
         )?;
         Ok(())
     }
@@ -626,13 +636,11 @@ impl SessionStore {
     }
 
     pub fn get_bootstrap_state(&self, has_token: bool) -> AppResult<BootstrapState> {
-        let destination = self
-            .get_destination()?
-            .map(|cfg| DestinationBootstrap {
-                server_url: cfg.server_url,
-                dataset_pid: cfg.dataset_pid,
-                has_token,
-            });
+        let destination = self.get_destination()?.map(|cfg| DestinationBootstrap {
+            server_url: cfg.server_url,
+            dataset_pid: cfg.dataset_pid,
+            has_token,
+        });
 
         Ok(BootstrapState {
             session_id: self.get_session_id()?,
@@ -651,9 +659,7 @@ impl SessionStore {
         let mut conn = self.connection()?;
         let tx = conn.transaction()?;
         self.clear_runtime_artifacts_tx(&tx)?;
-        tx.commit()
-            .map_err(AppError::Db)
-            .map(|_| ())
+        tx.commit().map_err(AppError::Db).map(|_| ())
     }
 
     pub fn restore_last_interrupted(&self) -> AppResult<()> {
@@ -664,7 +670,8 @@ impl SessionStore {
         self.force_set_session_state(&SessionState::Paused)?;
         if let Some(mut snapshot) = self.get_last_snapshot()? {
             snapshot.state = SessionState::Paused;
-            snapshot.last_message = Some("Session restored. Press Resume to continue transfer.".to_string());
+            snapshot.last_message =
+                Some("Session restored. Press Resume to continue transfer.".to_string());
             snapshot.updated_at = Utc::now();
             self.set_last_snapshot(&snapshot)?;
         }
@@ -721,7 +728,9 @@ impl SessionStore {
 
     fn get_kv(&self, conn: &Connection, key: &str) -> AppResult<Option<String>> {
         let value = conn
-            .query_row("SELECT value FROM kv WHERE key = ?1", [key], |row| row.get(0))
+            .query_row("SELECT value FROM kv WHERE key = ?1", [key], |row| {
+                row.get(0)
+            })
             .optional()?;
         Ok(value)
     }
@@ -882,7 +891,9 @@ fn i64_from_u64(value: u64) -> AppResult<i64> {
 
 fn u64_from_i64(value: i64) -> AppResult<u64> {
     if value < 0 {
-        return Err(internal(format!("negative integer found in persistence layer: {value}")));
+        return Err(internal(format!(
+            "negative integer found in persistence layer: {value}"
+        )));
     }
     Ok(value as u64)
 }

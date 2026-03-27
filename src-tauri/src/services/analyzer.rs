@@ -24,7 +24,8 @@ impl AnalyzerService {
         let mut summary = AnalysisSummary::default();
 
         let mut remote_by_path: HashMap<String, Vec<&RemoteDatasetFile>> = HashMap::new();
-        let mut remote_by_name_size: HashMap<(String, u64), Vec<&RemoteDatasetFile>> = HashMap::new();
+        let mut remote_by_name_size: HashMap<(String, u64), Vec<&RemoteDatasetFile>> =
+            HashMap::new();
 
         for remote in remote_files {
             remote_by_path
@@ -45,7 +46,9 @@ impl AnalyzerService {
 
             let normalized_relative = normalize_relative(&item.relative_path);
             let decision = if let Some(remotes) = remote_by_path.get(&normalized_relative) {
-                let same_size = remotes.iter().any(|remote| remote.size_bytes == item.size_bytes);
+                let same_size = remotes
+                    .iter()
+                    .any(|remote| remote.size_bytes == item.size_bytes);
                 if same_size {
                     AnalysisItemDecision {
                         item_id: item.item_id.clone(),
@@ -55,7 +58,9 @@ impl AnalyzerService {
                         size_bytes: item.size_bytes,
                         checksum_sha256: None,
                         decision: AnalysisDecisionKind::SkipExisting,
-                        reason: Some("File already exists remotely with same path and size".to_string()),
+                        reason: Some(
+                            "File already exists remotely with same path and size".to_string(),
+                        ),
                     }
                 } else {
                     AnalysisItemDecision {
@@ -72,7 +77,9 @@ impl AnalyzerService {
                         ),
                     }
                 }
-            } else if let Some(remotes) = remote_by_name_size.get(&(item.file_name.clone(), item.size_bytes)) {
+            } else if let Some(remotes) =
+                remote_by_name_size.get(&(item.file_name.clone(), item.size_bytes))
+            {
                 if remotes.len() == 1 {
                     let mut checksum_sha256 = None;
                     let remote = remotes[0];
@@ -335,18 +342,12 @@ mod tests {
     #[test]
     fn escalates_to_checksum_for_ambiguous_name_and_size() {
         let analyzer = AnalyzerService::new();
-        let temp_path = PathBuf::from(std::env::temp_dir()).join(format!(
-            "dvu_checksum_{}.bin",
-            Uuid::new_v4()
-        ));
+        let temp_path = PathBuf::from(std::env::temp_dir())
+            .join(format!("dvu_checksum_{}.bin", Uuid::new_v4()));
         std::fs::write(&temp_path, b"abc").expect("write temp payload");
-        let size = std::fs::metadata(&temp_path)
-            .expect("temp metadata")
-            .len();
-        let expected_checksum = compute_local_sha256(
-            temp_path.to_str().expect("temp path utf8"),
-        )
-        .expect("sha256");
+        let size = std::fs::metadata(&temp_path).expect("temp metadata").len();
+        let expected_checksum =
+            compute_local_sha256(temp_path.to_str().expect("temp path utf8")).expect("sha256");
 
         let scanned = vec![ScannedItem {
             item_id: "1".to_string(),
@@ -376,8 +377,14 @@ mod tests {
         let (summary, decisions) = analyzer.analyze(&scanned, &remote);
         let decision = decisions.first().expect("decision");
         assert_eq!(summary.skipped_existing_files, 1);
-        assert!(matches!(decision.decision, AnalysisDecisionKind::SkipExisting));
-        assert_eq!(decision.checksum_sha256.as_deref(), Some(expected_checksum.as_str()));
+        assert!(matches!(
+            decision.decision,
+            AnalysisDecisionKind::SkipExisting
+        ));
+        assert_eq!(
+            decision.checksum_sha256.as_deref(),
+            Some(expected_checksum.as_str())
+        );
 
         let _ = std::fs::remove_file(temp_path);
     }

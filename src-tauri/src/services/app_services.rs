@@ -1,6 +1,6 @@
 use std::path::PathBuf;
-use std::sync::{Arc, Once};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Once};
 
 use tauri::{AppHandle, Manager};
 use tracing_subscriber::EnvFilter;
@@ -45,7 +45,7 @@ impl AppServices {
         let store = Arc::new(SessionStore::new(data_dir.join("state.sqlite"))?);
         let preflight_cancel_requested = Arc::new(AtomicBool::new(false));
         let secrets = Arc::new(SecretsService::new("org.dataverse.heavyuploader"));
-        let dataverse = Arc::new(DataverseClient::new());
+        let dataverse = Arc::new(DataverseClient::new()?);
         let bundle = Arc::new(BundleService::new(data_dir.join("temp"))?);
         let scanner = Arc::new(ScannerService::new());
         let analyzer = Arc::new(AnalyzerService::new());
@@ -73,7 +73,8 @@ impl AppServices {
     }
 
     pub fn request_preflight_cancel(&self) {
-        self.preflight_cancel_requested.store(true, Ordering::Relaxed);
+        self.preflight_cancel_requested
+            .store(true, Ordering::Relaxed);
     }
 
     pub fn clear_preflight_cancel(&self) {

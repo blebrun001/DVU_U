@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::time::Instant;
 
 use chrono::Utc;
@@ -9,8 +9,8 @@ use tracing::{error, info, warn};
 
 use crate::domain::errors::{internal, AppError, AppResult};
 use crate::domain::models::{
-    FileTransferProgress, FinalReport, FinalReportEntry, ItemState, OperationResult, SessionState,
-    ScannedItem, TransferSnapshot,
+    FileTransferProgress, FinalReport, FinalReportEntry, ItemState, OperationResult, ScannedItem,
+    SessionState, TransferSnapshot,
 };
 use crate::services::dataverse_client::{DataverseClient, ProgressFn};
 use crate::services::retry::{is_retryable, next_backoff};
@@ -94,13 +94,10 @@ impl TransferEngine {
             tokio::spawn(async move {
                 let app_for_recovery = app.clone();
                 let store_for_recovery = store.clone();
-                if let Err(err) =
-                    run_transfer_loop(app, store, secrets, dataverse, control).await
-                {
+                if let Err(err) = run_transfer_loop(app, store, secrets, dataverse, control).await {
                     error!("transfer loop failed: {}", err);
                     let _ = store_for_recovery.cleanup_temp_bundle_file();
-                    let _ = store_for_recovery
-                        .force_set_session_state(&SessionState::Failed);
+                    let _ = store_for_recovery.force_set_session_state(&SessionState::Failed);
                     if let Ok(snapshot) = build_snapshot(
                         &store_for_recovery,
                         SessionState::Failed,
@@ -259,7 +256,9 @@ async fn run_transfer_loop(
             continue;
         }
 
-        let destination = store.get_destination()?.ok_or(AppError::MissingDestination)?;
+        let destination = store
+            .get_destination()?
+            .ok_or(AppError::MissingDestination)?;
         let token = secrets
             .get_api_token(&destination.server_url, &destination.dataset_pid)?
             .ok_or(AppError::MissingToken)?;
@@ -297,7 +296,7 @@ async fn run_transfer_loop(
             }
 
             let mut attempt = candidate.attempts.saturating_add(1).max(1);
-            let mut uploaded_this_file = candidate.uploaded_bytes;
+            let uploaded_this_file = candidate.uploaded_bytes;
             let candidate_size = candidate.size_bytes;
 
             loop {
@@ -409,10 +408,7 @@ async fn run_transfer_loop(
                         let retryable = is_retryable(&err);
                         warn!(
                             "Upload failure for {} attempt {}: {} (retryable={})",
-                            file_name,
-                            attempt,
-                            err,
-                            retryable
+                            file_name, attempt, err, retryable
                         );
 
                         if retryable && attempt < MAX_ATTEMPTS {
@@ -427,11 +423,7 @@ async fn run_transfer_loop(
                             let snapshot = build_snapshot(
                                 &store,
                                 SessionState::Uploading,
-                                Some(format!(
-                                    "Retry {} scheduled for {}",
-                                    attempt + 1,
-                                    file_name
-                                )),
+                                Some(format!("Retry {} scheduled for {}", attempt + 1, file_name)),
                                 Some(FileTransferProgress {
                                     item_id: item_id.clone(),
                                     file_name: file_name.clone(),
@@ -557,7 +549,11 @@ fn finalize_completed(
     Ok(state)
 }
 
-fn build_report(store: &SessionStore, started_clock: Instant, cancelled: bool) -> AppResult<FinalReport> {
+fn build_report(
+    store: &SessionStore,
+    started_clock: Instant,
+    cancelled: bool,
+) -> AppResult<FinalReport> {
     let items = store.list_scanned_items()?;
     let session_id = store.get_session_id()?;
     let started_at = store.get_started_at()?;
@@ -640,7 +636,12 @@ fn build_snapshot(
 
     let upload_scope: Vec<_> = items
         .iter()
-        .filter(|item| matches!(item.decision, Some(crate::domain::models::AnalysisDecisionKind::Ready)))
+        .filter(|item| {
+            matches!(
+                item.decision,
+                Some(crate::domain::models::AnalysisDecisionKind::Ready)
+            )
+        })
         .collect();
 
     let total_bytes = upload_scope.iter().map(|it| it.size_bytes).sum::<u64>();

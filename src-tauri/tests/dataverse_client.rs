@@ -45,7 +45,7 @@ async fn validates_destination_and_detects_direct_upload_fallback() {
         .mount(&server)
         .await;
 
-    let client = DataverseClient::new();
+    let client = DataverseClient::new().expect("client init");
     let result = client
         .validate_destination(&DestinationConfigInput {
             server_url: server.uri(),
@@ -84,7 +84,7 @@ async fn lists_remote_dataset_files() {
         .mount(&server)
         .await;
 
-    let client = DataverseClient::new();
+    let client = DataverseClient::new().expect("client init");
     let files = client
         .list_dataset_files(
             &DestinationConfigStored {
@@ -112,7 +112,7 @@ async fn maps_auth_failure_during_destination_validation() {
         .mount(&server)
         .await;
 
-    let client = DataverseClient::new();
+    let client = DataverseClient::new().expect("client init");
     let result = client
         .validate_destination(&DestinationConfigInput {
             server_url: server.uri(),
@@ -122,7 +122,10 @@ async fn maps_auth_failure_during_destination_validation() {
         .await;
 
     assert!(!result.ok);
-    assert!(matches!(result.error_kind, Some(DestinationErrorKind::Auth)));
+    assert!(matches!(
+        result.error_kind,
+        Some(DestinationErrorKind::Auth)
+    ));
 }
 
 #[tokio::test]
@@ -135,7 +138,7 @@ async fn maps_dataset_not_found_during_destination_validation() {
         .mount(&server)
         .await;
 
-    let client = DataverseClient::new();
+    let client = DataverseClient::new().expect("client init");
     let result = client
         .validate_destination(&DestinationConfigInput {
             server_url: server.uri(),
@@ -172,7 +175,7 @@ async fn falls_back_to_classic_when_direct_is_unavailable() {
         .mount(&server)
         .await;
 
-    let client = DataverseClient::new();
+    let client = DataverseClient::new().expect("client init");
     let destination = DestinationConfigStored {
         server_url: server.uri(),
         dataset_pid: "doi:10.9999/FK2/TEST".to_string(),
@@ -237,7 +240,7 @@ async fn uploads_in_direct_mode_when_single_url_is_available() {
         .mount(&server)
         .await;
 
-    let client = DataverseClient::new();
+    let client = DataverseClient::new().expect("client init");
     let destination = DestinationConfigStored {
         server_url: server.uri(),
         dataset_pid: "doi:10.9999/FK2/TEST".to_string(),
