@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
+    "package:macos:unsigned": "bash scripts/package-macos-unsigned-dmg.sh",
     "release:macos:unsigned": "bash scripts/release-macos-unsigned.sh"
   },
   "dependencies": {

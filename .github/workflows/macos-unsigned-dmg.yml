@@ -34,8 +34,11 @@ jobs:
       - name: Run Rust tests
         run: cargo test --manifest-path src-tauri/Cargo.toml
 
-      - name: Build unsigned macOS DMG
-        run: npm run tauri:build
+      - name: Build macOS app bundle
+        run: npm run tauri:build -- --bundles app
+
+      - name: Package unsigned macOS DMG
+        run: npm run package:macos:unsigned
 
       - name: Validate DMG artifact exists
         run: |

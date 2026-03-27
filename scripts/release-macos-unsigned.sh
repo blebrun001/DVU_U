@@ -16,10 +16,13 @@ npm test
 echo "==> Running Rust backend tests"
 cargo test --manifest-path src-tauri/Cargo.toml
 
-echo "==> Building unsigned macOS DMG"
-npm run tauri:build
+echo "==> Building macOS app bundle"
+npm run tauri:build -- --bundles app
 
-DMG_PATH="$(find src-tauri/target/release/bundle/dmg -maxdepth 1 -type f -name '*.dmg' | head -n 1 || true)"
+echo "==> Packaging unsigned macOS DMG"
+npm run package:macos:unsigned
+
+DMG_PATH="$(find src-tauri/target/release/bundle/dmg -maxdepth 1 -type f -name '*.dmg' | sort | tail -n 1 || true)"
 
 if [[ -z "${DMG_PATH}" ]]; then
   echo "ERROR: No DMG artifact found in src-tauri/target/release/bundle/dmg"

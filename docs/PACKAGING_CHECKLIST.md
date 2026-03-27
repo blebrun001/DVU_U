@@ -21,7 +21,9 @@
 2. Use Right-click on the app, then `Open`, then confirm.
 3. Alternative path:
    - `System Settings > Privacy & Security > Open Anyway`
-4. This package is for internal/testing distribution only and is not a publicly trusted macOS build.
+4. If `Open Anyway` does not appear, remove quarantine from the installed app:
+   - `xattr -dr com.apple.quarantine "/Applications/Dataverse Heavy Uploader.app"`
+5. This package is for internal/testing distribution only and is not a publicly trusted macOS build.
 
 ## Release validation
 
