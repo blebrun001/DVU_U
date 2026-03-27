@@ -10,7 +10,7 @@ fi
 PRODUCT_NAME="$(node -p "JSON.parse(require('fs').readFileSync('src-tauri/tauri.conf.json','utf8')).productName")"
 VERSION="$(node -p "JSON.parse(require('fs').readFileSync('src-tauri/tauri.conf.json','utf8')).version")"
 ARCH="$(uname -m)"
-TARGET_ROOT="${DVU_TARGET_DIR:-src-tauri/target}"
+TARGET_ROOT="${DVU_TARGET_DIR:-/tmp/dvu_u-target}"
 
 APP_SRC="${TARGET_ROOT}/release/bundle/macos/${PRODUCT_NAME}.app"
 if [[ ! -d "${APP_SRC}" ]]; then

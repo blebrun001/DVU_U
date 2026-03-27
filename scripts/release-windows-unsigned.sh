@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-DVU_TARGET_DIR="${DVU_TARGET_DIR:-/tmp/dvu_u-target}"
+DVU_TARGET_DIR="${DVU_TARGET_DIR:-src-tauri/target}"
 export DVU_TARGET_DIR
 export CARGO_TARGET_DIR="${DVU_TARGET_DIR}"
 

@@ -1,6 +1,6 @@
 {
   "name": "dvu_u",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,8 +9,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "tauri:dev": "DVU_TARGET_DIR=\"${DVU_TARGET_DIR:-/tmp/dvu_u-target}\" CARGO_TARGET_DIR=\"${DVU_TARGET_DIR:-/tmp/dvu_u-target}\" tauri dev",
-    "tauri:build": "DVU_TARGET_DIR=\"${DVU_TARGET_DIR:-/tmp/dvu_u-target}\" CARGO_TARGET_DIR=\"${DVU_TARGET_DIR:-/tmp/dvu_u-target}\" tauri build",
+    "tauri:dev": "node scripts/run-with-target-dir.mjs tauri dev",
+    "tauri:build": "node scripts/run-with-target-dir.mjs tauri build",
     "clean:build": "DVU_TARGET_DIR=\"${DVU_TARGET_DIR:-/tmp/dvu_u-target}\" CARGO_TARGET_DIR=\"${DVU_TARGET_DIR:-/tmp/dvu_u-target}\" cargo clean --manifest-path src-tauri/Cargo.toml && rm -rf src-tauri/target",
     "package:macos:unsigned": "bash scripts/package-macos-unsigned-dmg.sh",
     "release:macos:unsigned": "bash scripts/release-macos-unsigned.sh",
