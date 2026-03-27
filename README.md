@@ -1,6 +1,6 @@
 # Dataverse Heavy Uploader
 
-![Dataverse Heavy Uploader icon](src-tauri/icons/512.png)
+<img src="src-tauri/icons/512.png" alt="Dataverse Heavy Uploader icon" width="140" />
 
 Tauri desktop application for transferring large file batches to Dataverse, with:
 - pre-transfer duplicate/conflict analysis,
