@@ -47,6 +47,10 @@ export async function removeSource(sourceId: string): Promise<OperationResult> {
   return invoke<OperationResult>('remove_source', { sourceId });
 }
 
+export async function clearSources(): Promise<OperationResult> {
+  return invoke<OperationResult>('clear_sources');
+}
+
 export async function scanSources(): Promise<ScanSummary> {
   return invoke<ScanSummary>('scan_sources');
 }
@@ -89,8 +93,4 @@ export async function listHistory(): Promise<HistoryEntry[]> {
 
 export async function restoreLastInterrupted(): Promise<OperationResult> {
   return invoke<OperationResult>('restore_last_interrupted');
-}
-
-export async function exportReport(format: 'json' | 'csv'): Promise<OperationResult> {
-  return invoke<OperationResult>('export_report', { format });
 }

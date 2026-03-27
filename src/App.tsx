@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { exportReport } from './lib/api';
+import { useEffect, useState } from 'react';
 import { DestinationForm } from './features/DestinationForm';
 import { HistoryPanel } from './features/HistoryPanel';
 import { SourceManager } from './features/SourceManager';
@@ -8,6 +7,7 @@ import { shouldPollSnapshot, teardownStoreListener, useAppStore } from './store/
 
 export function App() {
   const store = useAppStore();
+  const [resetSignal, setResetSignal] = useState(0);
   const transferLocked =
     store.sessionState === 'uploading' ||
     store.sessionState === 'paused' ||
@@ -17,6 +17,10 @@ export function App() {
     !transferLocked &&
     store.sessionState !== 'scanning' &&
     store.sessionState !== 'analyzing';
+  const handleResetInterface = async () => {
+    await store.resetInterface();
+    setResetSignal((value) => value + 1);
+  };
 
   useEffect(() => {
     void store.bootstrap();
@@ -40,8 +44,20 @@ export function App() {
   return (
     <main className="app-shell">
       <header className="hero">
-        <h1>Dataverse Uploader Universal (DVU_U)</h1>
-        <p>Reliable large-file transfer with analysis, retry, and recovery.</p>
+        <img
+          src="/favicon.png"
+          alt="DVU_U logo"
+          className="hero-logo"
+        />
+        <div className="hero-text">
+          <h1>Dataverse Uploader Universal (DVU_U)</h1>
+          <p>Reliable large-file transfer with analysis, retry, and recovery.</p>
+        </div>
+        <div className="hero-actions">
+          <button type="button" className="ghost" onClick={handleResetInterface} disabled={store.isBusy}>
+            Réinitialiser l'interface
+          </button>
+        </div>
       </header>
 
       {store.errorMessage && <div className="global-error">{store.errorMessage}</div>}
@@ -55,6 +71,7 @@ export function App() {
         <DestinationForm
           initialDestination={store.destination}
           disabled={transferLocked}
+          resetSignal={resetSignal}
         />
         <SourceManager
           sources={store.sources}
@@ -75,9 +92,6 @@ export function App() {
           finalReport={store.finalReport}
           canStart={canStartTransfer}
           onAction={store.transferAction}
-          onExport={async (format) => {
-            await exportReport(format);
-          }}
         />
 
         <HistoryPanel
@@ -86,6 +100,14 @@ export function App() {
           onRestoreInterrupted={store.restoreInterrupted}
         />
       </div>
+
+      <section id="about" className="about" aria-label="About">
+        <p>
+          made by Brice Lebrun under the GPL-3.0 license - Institut Català de
+          Paleoecologia Humana i Evolució Social - Zona Educacional 4 Campus
+          Sescelades URV (Edifici W3) 43007 - TARRAGONA
+        </p>
+      </section>
     </main>
   );
 }

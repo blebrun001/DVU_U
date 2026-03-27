@@ -2,6 +2,7 @@ import { listen, UnlistenFn } from '@tauri-apps/api/event';
 import { create } from 'zustand';
 import {
   analyzeBatch,
+  clearSources,
   cancelTransfer,
   getFinalReport,
   getTransferSnapshot,
@@ -51,6 +52,7 @@ interface AppStore {
   refreshHistory: () => Promise<void>;
   restoreInterrupted: () => Promise<void>;
   transferAction: (action: 'start' | 'pause' | 'resume' | 'cancel') => Promise<void>;
+  resetInterface: () => Promise<void>;
 }
 
 let detachListeners: UnlistenFn[] = [];
@@ -337,6 +339,41 @@ export const useAppStore = create<AppStore>((set, get) => ({
       }
     } finally {
       set({ isBusy: false });
+    }
+  },
+  resetInterface: async () => {
+    set({ isBusy: true, errorMessage: null });
+    const sessionState = get().sessionState;
+    const mayBeActive = shouldPollSnapshot(sessionState) || sessionState === 'interrupted';
+    try {
+      if (mayBeActive) {
+        try {
+          await cancelTransfer();
+        } catch (err) {
+          const message = String(err).toLowerCase();
+          if (!message.includes('transfer not running')) {
+            throw err;
+          }
+        }
+      } else {
+        await clearSources();
+      }
+    } catch (err) {
+      set({ errorMessage: `Cannot reset interface: ${String(err)}` });
+    } finally {
+      set({
+        sessionState: 'draft',
+        destination: null,
+        sources: [],
+        keepStructure: false,
+        scanSummary: null,
+        transferPlan: null,
+        snapshot: null,
+        analysisProgress: null,
+        analysisLogs: [],
+        finalReport: null,
+        isBusy: false
+      });
     }
   }
 }));

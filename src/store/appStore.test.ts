@@ -16,6 +16,7 @@ vi.mock('@tauri-apps/api/event', () => ({
 
 vi.mock('../lib/api', () => ({
   analyzeBatch: vi.fn(),
+  clearSources: vi.fn(),
   cancelTransfer: vi.fn(),
   getFinalReport: vi.fn(),
   getTransferSnapshot: vi.fn(),
@@ -134,6 +135,7 @@ beforeEach(() => {
   mockedApi.listHistory.mockResolvedValue([]);
   mockedApi.scanSources.mockResolvedValue(makeScanSummary());
   mockedApi.analyzeBatch.mockResolvedValue(makePlan());
+  mockedApi.clearSources.mockResolvedValue({ ok: true });
   mockedApi.startTransfer.mockResolvedValue({ ok: true });
   mockedApi.pauseTransfer.mockResolvedValue({ ok: true });
   mockedApi.resumeTransfer.mockResolvedValue({ ok: true });
@@ -270,5 +272,68 @@ describe('useAppStore transferAction', () => {
     const state = useAppStore.getState();
     expect(state.errorMessage).toContain('Transfer action failed (pause): Error: network down');
     expect(state.isBusy).toBe(false);
+  });
+});
+
+describe('useAppStore resetInterface', () => {
+  it('clears local interface state and backend sources when no transfer is active', async () => {
+    useAppStore.setState({
+      sessionState: 'draft',
+      destination: {
+        serverUrl: 'https://demo.dataverse.org',
+        datasetPid: 'doi:10.1234/ABC',
+        hasToken: true
+      },
+      sources: [sourceFile],
+      keepStructure: true,
+      scanSummary: makeScanSummary(4),
+      transferPlan: makePlan(3),
+      snapshot: makeSnapshot('paused'),
+      analysisProgress: { step: 2, totalSteps: 6, message: 'Analyzing' } as AnalysisProgressEvent,
+      analysisLogs: ['log'],
+      finalReport: {
+        sessionId: 'session-1',
+        totalFiles: 1,
+        uploadedFiles: 1,
+        skippedFiles: 0,
+        conflictFiles: 0,
+        errorFiles: 0,
+        cancelledFiles: 0,
+        totalBytes: 10,
+        uploadedBytes: 10,
+        entries: []
+      }
+    });
+
+    await useAppStore.getState().resetInterface();
+
+    expect(mockedApi.clearSources).toHaveBeenCalledOnce();
+    expect(mockedApi.cancelTransfer).not.toHaveBeenCalled();
+
+    const state = useAppStore.getState();
+    expect(state.sessionState).toBe('draft');
+    expect(state.destination).toBeNull();
+    expect(state.sources).toEqual([]);
+    expect(state.keepStructure).toBe(false);
+    expect(state.scanSummary).toBeNull();
+    expect(state.transferPlan).toBeNull();
+    expect(state.snapshot).toBeNull();
+    expect(state.analysisProgress).toBeNull();
+    expect(state.analysisLogs).toEqual([]);
+    expect(state.finalReport).toBeNull();
+    expect(state.isBusy).toBe(false);
+  });
+
+  it('requests cancellation instead of clearing backend sources when transfer is active', async () => {
+    useAppStore.setState({
+      sessionState: 'uploading',
+      sources: [sourceFile]
+    });
+
+    await useAppStore.getState().resetInterface();
+
+    expect(mockedApi.cancelTransfer).toHaveBeenCalledOnce();
+    expect(mockedApi.clearSources).not.toHaveBeenCalled();
+    expect(useAppStore.getState().sources).toEqual([]);
   });
 });

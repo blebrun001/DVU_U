@@ -76,4 +76,24 @@ describe('DestinationForm', () => {
     expect(container.querySelectorAll('.input-status-icon.ok')).toHaveLength(2);
     expect(mockedApi.saveDestination).not.toHaveBeenCalled();
   });
+
+  it('clears all text fields when resetSignal changes', () => {
+    const { rerender } = render(<DestinationForm />);
+
+    fireEvent.change(screen.getByPlaceholderText('https://demo.dataverse.org'), {
+      target: { value: 'https://demo.dataverse.org' }
+    });
+    fireEvent.change(screen.getByPlaceholderText('doi:10.xxxx/XXXX'), {
+      target: { value: 'doi:10.1234/ABC' }
+    });
+    fireEvent.change(screen.getByPlaceholderText('********'), {
+      target: { value: 'my-token' }
+    });
+
+    rerender(<DestinationForm resetSignal={1} />);
+
+    expect(screen.getByPlaceholderText('https://demo.dataverse.org')).toHaveValue('');
+    expect(screen.getByPlaceholderText('doi:10.xxxx/XXXX')).toHaveValue('');
+    expect(screen.getByPlaceholderText('********')).toHaveValue('');
+  });
 });

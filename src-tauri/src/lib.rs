@@ -26,6 +26,7 @@ pub fn run() {
             commands::list_recent_datasets,
             commands::add_sources,
             commands::remove_source,
+            commands::clear_sources,
             commands::scan_sources,
             commands::analyze_batch,
             commands::start_transfer,
@@ -37,7 +38,6 @@ pub fn run() {
             commands::get_final_report,
             commands::list_history,
             commands::restore_last_interrupted,
-            commands::export_report,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

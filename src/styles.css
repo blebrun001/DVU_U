@@ -39,7 +39,28 @@ table {
 }
 
 .hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
   margin-bottom: 20px;
+}
+
+.hero-logo {
+  width: auto;
+  height: auto;
+  max-height: 58px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.hero-text {
+  min-width: 0;
+}
+
+.hero-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
 }
 
 .hero h1 {
@@ -51,6 +72,16 @@ table {
 .hero p {
   margin: 6px 0 0;
   color: var(--ink-soft);
+}
+
+@media (max-width: 640px) {
+  .hero-logo {
+    max-height: 52px;
+  }
+
+  .hero h1 {
+    font-size: 1.6rem;
+  }
 }
 
 .layout-grid {
@@ -413,6 +444,21 @@ th {
 .empty-state {
   margin-top: 10px;
   color: var(--ink-soft);
+}
+
+.about {
+  margin-top: 20px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f7faf5;
+}
+
+.about p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 @media (max-width: 1024px) {

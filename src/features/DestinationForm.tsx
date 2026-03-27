@@ -17,11 +17,13 @@ type FieldStatus = 'idle' | 'ok' | 'error';
 interface DestinationFormProps {
   initialDestination?: DestinationBootstrap | null;
   disabled?: boolean;
+  resetSignal?: number;
 }
 
 export function DestinationForm({
   initialDestination,
-  disabled = false
+  disabled = false,
+  resetSignal = 0
 }: DestinationFormProps) {
   const initialValues = {
     serverUrl: initialDestination?.serverUrl ?? '',
@@ -44,6 +46,7 @@ export function DestinationForm({
   const [datasetStatus, setDatasetStatus] = useState<FieldStatus>('idle');
   const [tokenStatus, setTokenStatus] = useState<FieldStatus>('idle');
   const lastSavedSignature = useRef<string>('');
+  const hasHandledResetSignal = useRef(false);
   const controlsDisabled = disabled || isSubmitting;
   const serverUrlValue = watch('serverUrl');
   const datasetPidValue = watch('datasetPid');
@@ -52,6 +55,23 @@ export function DestinationForm({
   useEffect(() => {
     reset(initialValues);
   }, [initialDestination?.serverUrl, initialDestination?.datasetPid, reset]);
+
+  useEffect(() => {
+    if (!hasHandledResetSignal.current) {
+      hasHandledResetSignal.current = true;
+      return;
+    }
+    reset({
+      serverUrl: '',
+      datasetPid: '',
+      apiToken: ''
+    });
+    setValidation(null);
+    setServerStatus('idle');
+    setDatasetStatus('idle');
+    setTokenStatus('idle');
+    lastSavedSignature.current = '';
+  }, [resetSignal, reset]);
 
   useEffect(() => {
     const serverUrl = (serverUrlValue ?? '').trim();

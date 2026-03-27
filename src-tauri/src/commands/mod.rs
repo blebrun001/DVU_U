@@ -10,7 +10,6 @@ use crate::domain::models::{
     SourceKind, TransferPlan, TransferSnapshot,
 };
 use crate::services::dataverse_url::normalize_server_url;
-use crate::services::reporting::ExportFormat;
 use crate::{AppState, SharedAppServices};
 
 #[tauri::command]
@@ -171,6 +170,15 @@ pub async fn remove_source(
         ensure_transfer_not_active(services)?;
         services.store.remove_source(&source_id)?;
         Ok(OperationResult::ok("Source removed"))
+    })
+}
+
+#[tauri::command]
+pub async fn clear_sources(state: State<'_, AppState>) -> Result<OperationResult, String> {
+    with_services(state, |services| {
+        ensure_transfer_not_active(services)?;
+        services.store.clear_sources()?;
+        Ok(OperationResult::ok("Sources cleared"))
     })
 }
 
@@ -536,34 +544,6 @@ pub async fn restore_last_interrupted(
         services.store.restore_last_interrupted()?;
         Ok(OperationResult::ok("Interrupted session restored"))
     })
-}
-
-#[tauri::command]
-pub async fn export_report(
-    state: State<'_, AppState>,
-    format: String,
-) -> Result<OperationResult, String> {
-    with_services(state, |services| {
-        let report = services
-            .store
-            .get_final_report()?
-            .ok_or_else(|| bad_request("no final report available"))?;
-
-        let format = parse_export_format(&format)?;
-        let path = services.reporting.export(&report, format)?;
-        Ok(OperationResult::ok(format!(
-            "Report exported to {}",
-            path.to_string_lossy()
-        )))
-    })
-}
-
-fn parse_export_format(value: &str) -> AppResult<ExportFormat> {
-    match value.trim().to_lowercase().as_str() {
-        "json" => Ok(ExportFormat::Json),
-        "csv" => Ok(ExportFormat::Csv),
-        other => Err(bad_request(format!("unsupported report format: {other}"))),
-    }
 }
 
 fn resolve_api_token(
