@@ -1,20 +1,24 @@
-# Icon Inventory (Local Cleanup Notes)
+# Icon Inventory
 
 Date: 2026-03-27
 
-## Method
+## Current source set (`src-tauri/icons/`)
 
-- Computed checksums for icon files under `src-tauri/icons/`.
-- Identified byte-identical duplicates.
-- Removed only duplicates that were clearly redundant naming variants.
+- `16.png`
+- `32.png`
+- `64.png`
+- `128.png`
+- `256.png`
+- `512.png`
+- `1024.png`
 
-## Duplicates removed
+## Derived compatibility files
 
-- `src-tauri/icons/ios/AppIcon-20x20@2x-1.png` (duplicate of `AppIcon-20x20@2x.png`)
-- `src-tauri/icons/ios/AppIcon-29x29@2x-1.png` (duplicate of `AppIcon-29x29@2x.png`)
-- `src-tauri/icons/ios/AppIcon-40x40@2x-1.png` (duplicate of `AppIcon-40x40@2x.png`)
+- `icon.png` (copied from `512.png`)
+- `icon.ico` (generated from `256.png`)
 
-## Kept intentionally
+## Project references updated
 
-- Bundle-referenced icons in `src-tauri/tauri.conf.json` (`icons/icon.png`, `icons/icon.ico`)
-- Other platform icon sizes and variants required by packaging targets
+- Tauri bundle config uses `icons/icon.png` and `icons/icon.ico` from the generated compatibility files.
+- Frontend favicon uses `public/favicon.png` (copied from `src-tauri/icons/64.png`).
+- README displays `src-tauri/icons/512.png`.
