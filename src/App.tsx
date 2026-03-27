@@ -40,7 +40,7 @@ export function App() {
   return (
     <main className="app-shell">
       <header className="hero">
-        <h1>Dataverse Heavy Uploader</h1>
+        <h1>Dataverse Uploader Universal (DVU_U)</h1>
         <p>Reliable large-file transfer with analysis, retry, and recovery.</p>
       </header>
 

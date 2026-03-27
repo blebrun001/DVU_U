@@ -2,7 +2,7 @@
 
 ## 1) Goal
 
-`Dataverse Heavy Uploader` is a desktop application focused on large Dataverse transfers.
+`Dataverse Uploader Universal (DVU_U)` is a desktop application focused on large Dataverse transfers.
 The project prioritizes operational reliability over basic upload capability:
 - local batch preparation through source scanning,
 - pre-transfer analysis to prevent duplicates/conflicts,

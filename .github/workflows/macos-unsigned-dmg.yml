@@ -48,7 +48,7 @@ jobs:
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dataverse-heavy-uploader-macos-dmg
+          name: dvu_u-macos-dmg
           path: src-tauri/target/release/bundle/dmg/*.dmg
           if-no-files-found: error
 

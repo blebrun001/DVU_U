@@ -25,7 +25,7 @@
 3. Alternative path:
    - `System Settings > Privacy & Security > Open Anyway`
 4. If `Open Anyway` does not appear, remove quarantine from the installed app:
-   - `xattr -dr com.apple.quarantine "/Applications/Dataverse Heavy Uploader.app"`
+   - `xattr -dr com.apple.quarantine "/Applications/Dataverse Uploader Universal (DVU_U).app"`
 5. This package is for internal/testing distribution only and is not a publicly trusted macOS build.
 
 ## Installation notes (Windows SmartScreen)
