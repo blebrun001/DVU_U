@@ -1,4 +1,4 @@
-# Packaging Checklist (macOS + Windows)
+# Packaging Checklist (macOS unsigned DMG)
 
 ## Pre-build
 
@@ -10,17 +10,18 @@
 
 ## Build artifacts
 
-1. Build app bundles:
-   - `npm run tauri:build`
-2. Verify generated installers:
-   - macOS: `.dmg` / `.app`
-   - Windows: `.msi` / `.exe`
+1. Build unsigned macOS DMG:
+   - `npm run release:macos:unsigned`
+2. Verify generated installer:
+   - macOS: `src-tauri/target/release/bundle/dmg/*.dmg`
 
-## Signing
+## Installation notes (Gatekeeper)
 
-1. macOS: sign app and installer with Developer ID certificates.
-2. Windows: sign installer/executables with Authenticode certificate.
-3. Re-verify signatures post-build.
+1. First launch may be blocked because the app is unsigned.
+2. Use Right-click on the app, then `Open`, then confirm.
+3. Alternative path:
+   - `System Settings > Privacy & Security > Open Anyway`
+4. This package is for internal/testing distribution only and is not a publicly trusted macOS build.
 
 ## Release validation
 

@@ -26,6 +26,7 @@ npm run tauri:dev
 - `npm run tauri:dev`: full desktop app (frontend + Rust backend)
 - `npm run build`: frontend build
 - `npm run tauri:build`: desktop installer build
+- `npm run release:macos:unsigned`: macOS unsigned DMG release flow (tests + build + DMG check)
 - `npm test`: frontend tests (Vitest)
 - `cd src-tauri && cargo test`: Rust backend tests
 

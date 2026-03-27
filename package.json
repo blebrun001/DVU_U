@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build",
+    "release:macos:unsigned": "bash scripts/release-macos-unsigned.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
