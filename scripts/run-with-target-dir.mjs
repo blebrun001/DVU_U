@@ -3,10 +3,10 @@
 import { spawn } from "node:child_process";
 import os from "node:os";
 
-const args = process.argv.slice(2);
+const tauriArgs = process.argv.slice(2);
 
-if (args.length === 0) {
-  console.error("Usage: node scripts/run-with-target-dir.mjs <command> [args...]");
+if (tauriArgs.length === 0) {
+  console.error("Usage: node scripts/run-with-target-dir.mjs <tauri-args...>");
   process.exit(1);
 }
 
@@ -21,10 +21,10 @@ const env = {
   CARGO_TARGET_DIR: process.env.CARGO_TARGET_DIR || targetDir
 };
 
-const [command, ...commandArgs] = args;
-const child = spawn(command, commandArgs, {
+const child = spawn("npm", ["exec", "--", "tauri", ...tauriArgs], {
   env,
-  stdio: "inherit"
+  stdio: "inherit",
+  shell: process.platform === "win32"
 });
 
 child.on("error", (error) => {
