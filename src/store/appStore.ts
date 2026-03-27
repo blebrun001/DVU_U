@@ -55,7 +55,7 @@ interface AppStore {
 
 let detachListeners: UnlistenFn[] = [];
 
-function canKeepStructureForSources(sources: SourceEntry[]): boolean {
+export function canKeepStructureForSources(sources: SourceEntry[]): boolean {
   return sources.length > 1 || sources.some((source) => source.kind === 'folder');
 }
 
