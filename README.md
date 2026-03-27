@@ -27,6 +27,8 @@ npm run tauri:dev
 - `npm run build`: frontend build
 - `npm run tauri:build`: desktop installer build
 - `npm run release:macos:unsigned`: macOS unsigned DMG release flow (tests + build + DMG check)
+- `npm run release:windows:unsigned`: Windows unsigned NSIS release flow (tests + build + `.exe` check)
+- `npm run package:windows:unsigned`: validate Windows unsigned NSIS artifact exists
 - `npm test`: frontend tests (Vitest)
 - `cd src-tauri && cargo test`: Rust backend tests
 

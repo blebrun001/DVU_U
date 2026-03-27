@@ -1,4 +1,4 @@
-# Packaging Checklist (macOS unsigned DMG)
+# Packaging Checklist (macOS DMG + Windows NSIS, unsigned)
 
 ## Pre-build
 
@@ -12,8 +12,11 @@
 
 1. Build unsigned macOS DMG:
    - `npm run release:macos:unsigned`
-2. Verify generated installer:
+2. Build unsigned Windows NSIS installer (run on Windows):
+   - `npm run release:windows:unsigned`
+3. Verify generated installer:
    - macOS: `src-tauri/target/release/bundle/dmg/*.dmg`
+   - Windows: `src-tauri/target/release/bundle/nsis/*.exe`
 
 ## Installation notes (Gatekeeper)
 
@@ -24,6 +27,12 @@
 4. If `Open Anyway` does not appear, remove quarantine from the installed app:
    - `xattr -dr com.apple.quarantine "/Applications/Dataverse Heavy Uploader.app"`
 5. This package is for internal/testing distribution only and is not a publicly trusted macOS build.
+
+## Installation notes (Windows SmartScreen)
+
+1. First launch may show a SmartScreen warning because the installer is unsigned.
+2. Click `More info` then `Run anyway` to continue internal/testing installs.
+3. This package is for internal/testing distribution only and is not a publicly trusted Windows build.
 
 ## Release validation
 

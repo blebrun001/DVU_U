@@ -27,7 +27,8 @@
   "bundle": {
     "active": true,
     "targets": [
-      "dmg"
+      "dmg",
+      "nsis"
     ],
     "icon": [
       "icons/icon.png"

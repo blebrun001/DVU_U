@@ -12,7 +12,9 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "package:macos:unsigned": "bash scripts/package-macos-unsigned-dmg.sh",
-    "release:macos:unsigned": "bash scripts/release-macos-unsigned.sh"
+    "release:macos:unsigned": "bash scripts/release-macos-unsigned.sh",
+    "package:windows:unsigned": "bash scripts/package-windows-unsigned.sh",
+    "release:windows:unsigned": "bash scripts/release-windows-unsigned.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
