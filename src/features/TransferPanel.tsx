@@ -10,7 +10,6 @@ interface TransferPanelProps {
   finalReport: FinalReport | null;
   canStart: boolean;
   onAction: (action: 'start' | 'pause' | 'resume' | 'cancel') => Promise<void>;
-  onExport: (format: 'json' | 'csv') => Promise<void>;
 }
 
 export function TransferPanel({
@@ -20,8 +19,7 @@ export function TransferPanel({
   analysisLogs,
   finalReport,
   canStart,
-  onAction,
-  onExport
+  onAction
 }: TransferPanelProps) {
   const isUploading = sessionState === 'uploading';
   const isResumable = sessionState === 'paused' || sessionState === 'interrupted';
@@ -125,14 +123,6 @@ export function TransferPanel({
             <Stat label="Errors" value={finalReport.errorFiles} />
             <Stat label="Total bytes" value={formatBytes(finalReport.totalBytes)} />
             <Stat label="Duration" value={finalReport.durationSeconds ? `${finalReport.durationSeconds}s` : 'n/a'} />
-          </div>
-          <div className="actions-row">
-            <button type="button" onClick={() => void onExport('json')}>
-              Export JSON
-            </button>
-            <button type="button" onClick={() => void onExport('csv')}>
-              Export CSV
-            </button>
           </div>
         </div>
       )}

@@ -30,7 +30,6 @@ describe('TransferPanel controls', () => {
         finalReport={null}
         canStart
         onAction={vi.fn(async () => undefined)}
-        onExport={vi.fn(async () => undefined)}
       />
     );
 
@@ -50,7 +49,6 @@ describe('TransferPanel controls', () => {
         finalReport={null}
         canStart={false}
         onAction={vi.fn(async () => undefined)}
-        onExport={vi.fn(async () => undefined)}
       />
     );
 
@@ -69,7 +67,6 @@ describe('TransferPanel controls', () => {
         finalReport={null}
         canStart={false}
         onAction={vi.fn(async () => undefined)}
-        onExport={vi.fn(async () => undefined)}
       />
     );
 
@@ -86,7 +83,6 @@ describe('TransferPanel controls', () => {
         finalReport={null}
         canStart={false}
         onAction={vi.fn(async () => undefined)}
-        onExport={vi.fn(async () => undefined)}
       />
     );
 
