@@ -8,7 +8,7 @@ The project prioritizes operational reliability over basic upload capability:
 - pre-transfer analysis to prevent duplicates/conflicts,
 - robust execution with retry/pause/resume/cancel,
 - recovery after application interruption,
-- traceability through history and exportable final reports.
+- traceability through history and final reports.
 
 ## 2) High-Level Architecture
 
@@ -18,7 +18,7 @@ Two-layer architecture:
 
 Backend layout:
 - `commands`: Tauri IPC API consumed by frontend.
-- `services`: business services (scanner, analyzer, transfer engine, Dataverse client, storage, reporting, secrets).
+- `services`: business services (scanner, analyzer, transfer engine, Dataverse client, storage, secrets).
 - `domain`: shared models, errors, and state machine.
 
 Frontend layout:
@@ -61,7 +61,6 @@ Frontend layout:
 6. **Completion and reporting**
 - Final states include `completed`, `completed_with_errors`, `failed`, or `cancelled`.
 - Generates a `FinalReport`.
-- Exports JSON/CSV to the app data `reports` directory.
 
 ## 4) State Model
 
@@ -95,7 +94,7 @@ Exposed IPC commands include:
 - sources/scan/analysis: `add_sources`, `remove_source`, `scan_sources`, `analyze_batch`
 - transfer control: `start_transfer`, `pause_transfer`, `resume_transfer`, `cancel_transfer`
 - state reads: `get_transfer_snapshot`, `get_analysis_summary`, `get_final_report`, `list_history`
-- recovery/export: `restore_last_interrupted`, `export_report`
+- recovery: `restore_last_interrupted`
 
 DTOs are conceptually mirrored between `src-tauri/src/domain/models.rs` and `src/lib/types.ts`.
 
@@ -108,7 +107,6 @@ Frontend (Vitest):
 Backend (`cargo test`):
 - Dataverse service tests (validation, file listing, direct->classic fallback),
 - persistence test (session rotation),
-- JSON/CSV report export test,
 - state-machine tests.
 
 ## 8) Strengths

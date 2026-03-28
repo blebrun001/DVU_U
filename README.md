@@ -25,8 +25,19 @@ Prebuilt desktop installers are published for both macOS and Windows.
 
 Important:
 - Current release artifacts are unsigned and intended for internal/testing use.
-- macOS may show Gatekeeper warnings on first launch.
+- On recent macOS versions, unsigned/notarization-missing builds can show:
+  `"is damaged and can't be opened. You should move it to the Bin/Trash."`
 - Windows may show SmartScreen warnings on first launch.
+
+If macOS blocks the DMG/app with the "is damaged" message, run:
+
+```bash
+xattr -dr com.apple.quarantine "/path/to/Dataverse.Uploader.Universal.DVU_U._0.1.13_arm64.dmg"
+open "/path/to/Dataverse.Uploader.Universal.DVU_U._0.1.13_arm64.dmg"
+xattr -dr com.apple.quarantine "/Applications/Dataverse Uploader Universal (DVU_U).app"
+```
+
+For public distribution, a proper Apple Developer signature + notarization is required.
 
 ## Option 2: Developer Mode (Run/Build From Source)
 

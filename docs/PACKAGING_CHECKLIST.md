@@ -24,9 +24,13 @@
 2. Use Right-click on the app, then `Open`, then confirm.
 3. Alternative path:
    - `System Settings > Privacy & Security > Open Anyway`
-4. If `Open Anyway` does not appear, remove quarantine from the installed app:
+4. On recent macOS versions, you may see:
+   - `"is damaged and can't be opened. You should move it to the Bin/Trash."`
+5. If `Open Anyway` does not appear, remove quarantine from both the downloaded DMG and installed app:
+   - `xattr -dr com.apple.quarantine "/path/to/Dataverse.Uploader.Universal.DVU_U._<version>_arm64.dmg"`
+   - `open "/path/to/Dataverse.Uploader.Universal.DVU_U._<version>_arm64.dmg"`
    - `xattr -dr com.apple.quarantine "/Applications/Dataverse Uploader Universal (DVU_U).app"`
-5. This package is for internal/testing distribution only and is not a publicly trusted macOS build.
+6. For public distribution, use Apple code signing + notarization (unsigned builds are for internal/testing only).
 
 ## Installation notes (Windows SmartScreen)
 
@@ -40,4 +44,4 @@
 2. Destination connection test and dataset validation.
 3. Large transfer smoke test (classic and direct upload fallback path).
 4. Interruption recovery test (close app mid-upload, reopen, resume).
-5. Final report export validation (JSON + CSV).
+5. Final report visibility validation in-app.

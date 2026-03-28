@@ -21,7 +21,6 @@ export function SourceManager({
   onKeepStructureChanged,
   disabled = false
 }: SourceManagerProps) {
-  const [recursive, setRecursive] = useState(true);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const canKeepStructure = sources.length > 1 || sources.some((source) => source.kind === 'folder');
@@ -42,7 +41,7 @@ export function SourceManager({
       if (paths.length === 0) {
         return;
       }
-      const updated = await addSources(paths, recursive);
+      const updated = await addSources(paths, true);
       onSourcesChanged(updated);
     } catch (err) {
       setFeedback(`Cannot add files: ${String(err)}`);
@@ -67,7 +66,7 @@ export function SourceManager({
       if (paths.length === 0) {
         return;
       }
-      const updated = await addSources(paths, recursive);
+      const updated = await addSources(paths, true);
       onSourcesChanged(updated);
     } catch (err) {
       setFeedback(`Cannot add folders: ${String(err)}`);
@@ -117,7 +116,7 @@ export function SourceManager({
 
     setBusy(true);
     try {
-      const updated = await addSources(paths, recursive);
+      const updated = await addSources(paths, true);
       onSourcesChanged(updated);
     } catch (err) {
       setFeedback(`Cannot import dropped files: ${String(err)}`);
@@ -140,15 +139,6 @@ export function SourceManager({
         <button type="button" onClick={pickFolder} disabled={busy || disabled}>
           Add folder
         </button>
-        <label className="checkbox-inline">
-          <input
-            type="checkbox"
-            checked={recursive}
-            onChange={(e) => setRecursive(e.target.checked)}
-            disabled={busy || disabled}
-          />
-          Recursive scan
-        </label>
         {canKeepStructure && (
           <label className="checkbox-inline">
             <input

@@ -16,7 +16,6 @@
   - Uses path+size fast matching and targeted SHA-256 escalation for ambiguous `name+size` cases when remote checksum is available.
 - `dataverse_client`: Dataverse API integration (validation, remote inventory, classic upload, direct upload + fallback).
 - `transfer_engine`: single active transfer orchestration with retries, pause/resume/cancel, snapshot emission.
-- `reporting`: final report export (JSON/CSV).
 
 ## Persistence policy
 
