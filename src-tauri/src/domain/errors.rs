@@ -29,8 +29,6 @@ pub enum AppError {
     Db(#[from] rusqlite::Error),
     #[error("serialization error: {0}")]
     Serde(#[from] serde_json::Error),
-    #[error("csv error: {0}")]
-    Csv(#[from] csv::Error),
     #[error("request error: {0}")]
     Reqwest(#[from] reqwest::Error),
     #[error("keychain error: {0}")]
