@@ -9,7 +9,6 @@ use crate::domain::errors::{internal, AppResult};
 use crate::services::analyzer::AnalyzerService;
 use crate::services::bundle_service::BundleService;
 use crate::services::dataverse_client::DataverseClient;
-use crate::services::reporting::ReportingService;
 use crate::services::scanner::ScannerService;
 use crate::services::secrets::SecretsService;
 use crate::services::session_store::SessionStore;
@@ -26,7 +25,6 @@ pub struct AppServices {
     pub bundle: Arc<BundleService>,
     pub scanner: Arc<ScannerService>,
     pub analyzer: Arc<AnalyzerService>,
-    pub reporting: Arc<ReportingService>,
     pub transfer: Arc<TransferEngine>,
     pub data_dir: PathBuf,
 }
@@ -49,7 +47,6 @@ impl AppServices {
         let bundle = Arc::new(BundleService::new(data_dir.join("temp"))?);
         let scanner = Arc::new(ScannerService::new());
         let analyzer = Arc::new(AnalyzerService::new());
-        let reporting = Arc::new(ReportingService::new(data_dir.join("reports"))?);
         let transfer = Arc::new(TransferEngine::new(
             app.clone(),
             store.clone(),
@@ -66,7 +63,6 @@ impl AppServices {
             bundle,
             scanner,
             analyzer,
-            reporting,
             transfer,
             data_dir,
         })
