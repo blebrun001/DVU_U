@@ -4,6 +4,7 @@ dist/
 coverage/
 
 src-tauri/target/
+src-tauri/**/target/
 **/*.rs.bk
 
 .DS_Store
