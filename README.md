@@ -1,6 +1,6 @@
-# Dataverse Uploader Universal (DVU_U)
+# Dataverse Uploader
 
-<img src="src-tauri/icons/512.png" alt="Dataverse Uploader Universal (DVU_U) icon" width="140" />
+<img src="src-tauri/icons/512.png" alt="Dataverse Uploader icon" width="140" />
 
 A Tauri desktop application for transferring large file batches to Dataverse, with:
 - pre-transfer duplicate/conflict analysis,
@@ -10,7 +10,7 @@ A Tauri desktop application for transferring large file batches to Dataverse, wi
 
 ## Choose Your Setup
 
-You can use DVU_U in two different ways:
+You can use Dataverse Uploader in two different ways:
 
 1. Use prebuilt releases (recommended for most users)
 2. Run/build in developer mode (from source)
@@ -32,9 +32,9 @@ Important:
 If macOS blocks the DMG/app with the "is damaged" message, run:
 
 ```bash
-xattr -dr com.apple.quarantine "/path/to/Dataverse.Uploader.Universal.DVU_U._0.1.13_arm64.dmg"
-open "/path/to/Dataverse.Uploader.Universal.DVU_U._0.1.13_arm64.dmg"
-xattr -dr com.apple.quarantine "/Applications/Dataverse Uploader Universal (DVU_U).app"
+xattr -dr com.apple.quarantine "/path/to/Dataverse.Uploader_0.1.13_arm64.dmg"
+open "/path/to/Dataverse.Uploader_0.1.13_arm64.dmg"
+xattr -dr com.apple.quarantine "/Applications/Dataverse Uploader.app"
 ```
 
 For public distribution, a proper Apple Developer signature + notarization is required.
@@ -68,8 +68,8 @@ npm run tauri:dev
 - `npm test`: frontend tests (Vitest)
 - `cd src-tauri && cargo test`: Rust backend tests
 
-By default, Rust/Tauri build artifacts are written to `/tmp/dvu_u-target` to keep repository size small.
-You can override this path by exporting `DVU_TARGET_DIR` before running scripts.
+By default, Rust/Tauri build artifacts are written to `/tmp/dataverse_uploader-target` to keep repository size small.
+You can override this path by exporting `DATAVERSE_UPLOADER_TARGET_DIR` (or legacy `DVU_TARGET_DIR`) before running scripts.
 
 ## User Workflow
 

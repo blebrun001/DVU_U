@@ -7,7 +7,7 @@ if [[ "${OS:-}" != "Windows_NT" ]]; then
   exit 1
 fi
 
-TARGET_ROOT="${DVU_TARGET_DIR:-src-tauri/target}"
+TARGET_ROOT="${DATAVERSE_UPLOADER_TARGET_DIR:-${DVU_TARGET_DIR:-src-tauri/target}}"
 EXE_DIR="${TARGET_ROOT}/release/bundle/nsis"
 EXE_PATH="$(find "${EXE_DIR}" -maxdepth 1 -type f -name '*.exe' | sort | tail -n 1 || true)"
 

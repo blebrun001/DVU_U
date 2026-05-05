@@ -2,9 +2,10 @@
 
 set -euo pipefail
 
-DVU_TARGET_DIR="${DVU_TARGET_DIR:-src-tauri/target}"
-export DVU_TARGET_DIR
-export CARGO_TARGET_DIR="${DVU_TARGET_DIR}"
+DATAVERSE_UPLOADER_TARGET_DIR="${DATAVERSE_UPLOADER_TARGET_DIR:-${DVU_TARGET_DIR:-src-tauri/target}}"
+export DATAVERSE_UPLOADER_TARGET_DIR
+export DVU_TARGET_DIR="${DVU_TARGET_DIR:-${DATAVERSE_UPLOADER_TARGET_DIR}}"
+export CARGO_TARGET_DIR="${DATAVERSE_UPLOADER_TARGET_DIR}"
 
 if [[ "${OS:-}" != "Windows_NT" ]]; then
   echo "This script must be run on Windows."

@@ -11,13 +11,17 @@ if (tauriArgs.length === 0) {
 }
 
 const defaultTargetDir = process.platform === "win32"
-  ? `${os.tmpdir()}\\dvu_u-target`
-  : "/tmp/dvu_u-target";
+  ? `${os.tmpdir()}\\dataverse_uploader-target`
+  : "/tmp/dataverse_uploader-target";
 
-const targetDir = process.env.DVU_TARGET_DIR || defaultTargetDir;
+const targetDir =
+  process.env.DATAVERSE_UPLOADER_TARGET_DIR ||
+  process.env.DVU_TARGET_DIR ||
+  defaultTargetDir;
 const env = {
   ...process.env,
-  DVU_TARGET_DIR: targetDir,
+  DATAVERSE_UPLOADER_TARGET_DIR: targetDir,
+  DVU_TARGET_DIR: process.env.DVU_TARGET_DIR || targetDir,
   CARGO_TARGET_DIR: process.env.CARGO_TARGET_DIR || targetDir
 };
 

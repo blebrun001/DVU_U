@@ -1,8 +1,8 @@
 [package]
 name = "dataverse_heavy_uploader"
 version = "0.1.13"
-description = "Reliable Dataverse Uploader Universal (DVU_U)"
-authors = ["Dataverse Uploader Universal Team"]
+description = "Reliable Dataverse Uploader"
+authors = ["Dataverse Uploader Team"]
 edition = "2021"
 
 [lib]

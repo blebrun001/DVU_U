@@ -1,8 +1,12 @@
 # Icon Inventory
 
-Date: 2026-03-27
+Date: 2026-05-05
 
-## Current source set (`src-tauri/icons/`)
+## Source logo
+
+- Root source: `bestiole_4-DVU-Uploader.png`
+
+## Generated icon set (`src-tauri/icons/`)
 
 - `16.png`
 - `32.png`

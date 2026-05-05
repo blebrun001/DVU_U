@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Dataverse Uploader Universal (DVU_U)",
+  "productName": "Dataverse Uploader",
   "version": "0.1.13",
-  "identifier": "org.dataverse.dvuu",
+  "identifier": "org.dataverse.uploader",
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Dataverse Uploader Universal (DVU_U)",
+        "title": "Dataverse Uploader",
         "width": 1440,
         "height": 960,
         "minWidth": 1080,

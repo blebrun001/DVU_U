@@ -46,11 +46,11 @@ export function App() {
       <header className="hero">
         <img
           src="/favicon.png"
-          alt="DVU_U logo"
+          alt="Dataverse Uploader logo"
           className="hero-logo"
         />
         <div className="hero-text">
-          <h1>Dataverse Uploader Universal (DVU_U)</h1>
+          <h1>Dataverse Uploader</h1>
           <p>Reliable large-file transfer with analysis, retry, and recovery.</p>
         </div>
         <div className="hero-actions">

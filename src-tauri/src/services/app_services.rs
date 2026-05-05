@@ -35,14 +35,14 @@ impl AppServices {
             .path()
             .app_data_dir()
             .map_err(|err| internal(format!("cannot locate app data directory: {err}")))?
-            .join("dvu_u");
+            .join("dataverse_uploader");
 
         std::fs::create_dir_all(&data_dir)?;
         init_logging(&data_dir);
 
         let store = Arc::new(SessionStore::new(data_dir.join("state.sqlite"))?);
         let preflight_cancel_requested = Arc::new(AtomicBool::new(false));
-        let secrets = Arc::new(SecretsService::new("org.dataverse.dvuu"));
+        let secrets = Arc::new(SecretsService::new("org.dataverse.uploader"));
         let dataverse = Arc::new(DataverseClient::new()?);
         let bundle = Arc::new(BundleService::new(data_dir.join("temp"))?);
         let scanner = Arc::new(ScannerService::new());

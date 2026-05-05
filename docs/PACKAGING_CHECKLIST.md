@@ -27,9 +27,9 @@
 4. On recent macOS versions, you may see:
    - `"is damaged and can't be opened. You should move it to the Bin/Trash."`
 5. If `Open Anyway` does not appear, remove quarantine from both the downloaded DMG and installed app:
-   - `xattr -dr com.apple.quarantine "/path/to/Dataverse.Uploader.Universal.DVU_U._<version>_arm64.dmg"`
-   - `open "/path/to/Dataverse.Uploader.Universal.DVU_U._<version>_arm64.dmg"`
-   - `xattr -dr com.apple.quarantine "/Applications/Dataverse Uploader Universal (DVU_U).app"`
+   - `xattr -dr com.apple.quarantine "/path/to/Dataverse.Uploader._<version>_arm64.dmg"`
+   - `open "/path/to/Dataverse.Uploader._<version>_arm64.dmg"`
+   - `xattr -dr com.apple.quarantine "/Applications/Dataverse Uploader.app"`
 6. For public distribution, use Apple code signing + notarization (unsigned builds are for internal/testing only).
 
 ## Installation notes (Windows SmartScreen)
